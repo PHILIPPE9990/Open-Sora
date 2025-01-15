@@ -9,4 +9,4 @@ cmd  = [
 ]
 
 
-subprocess.run(cmd, cwd="back_end/Open-Sora")
+subprocess.run(cmd)
