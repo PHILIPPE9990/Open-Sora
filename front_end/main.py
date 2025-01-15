@@ -1,7 +1,7 @@
 import os
 import sys
 import config
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy
 from PyQt5.QtCore import Qt, QUrl
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -98,9 +98,55 @@ class MainWindow(QMainWindow):
     
     #Download button
     def download_button(self):
-        download_b =QPushButton(config.download, self)
-        download_b.setEnabled(False)
-        return download_b
+        self.download_b =QPushButton(config.download, self)
+        self.download_b.setEnabled(False)
+
+    # #Update download button status
+    # def update_download_button_status(self, status):
+    #     if status == QMediaPlayer.LoadedMedia:
+    #         self.download_b.setEnabled(True)
+    #     else:
+    #          self.download_b.setEnabled(False)
+
+    #Video widget
+    def video_widget(self):
+        #Create video widget
+        self.video_widget = QVideoWidget()
+        self.media_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        self.media_player.setVideoOutput(self.video_widget)
+
+        self.video_widget.setFixedSize(800, 600) 
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        #need to change later
+        video_path = os.path.join(script_dir, "../video/sample_0000.mp4")
+        video_url = QUrl.fromLocalFile(video_path)
+        self.media_player.setMedia(QMediaContent(video_url))
+
+        #self.media_player.mediaStatusChanged.connect(self.update_download_button_status)
+        
+        #Play buttton
+        self.play_button = QPushButton()
+        self.play_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+
+        #Video Slider
+        self.position_slider = QSlider(Qt.Horizontal)
+        self.position_slider.setRange(0, 0)
+        self.position_slider.sliderMoved.connect(self.set_position)
+
+        #Download button
+        self.download_button()
+
+        self.pannel_layout = QHBoxLayout()
+        self.pannel_layout.addWidget(self.download_b)
+        self.pannel_layout.addWidget(self.play_button)
+        self.pannel_layout.addWidget(self.position_slider)
+
+        self.play_button.clicked.connect(self.play_video)
+        self.media_player.stateChanged.connect(self.icon_changed)
+        self.media_player.positionChanged.connect(self.position_changed)
+        self.media_player.durationChanged.connect(self.duration_changed)
+        self.position_slider.sliderMoved.connect(self.set_position)
 
     #Slider poistion change when playing video
     def set_position(self, position):
@@ -213,40 +259,12 @@ class MainWindow(QMainWindow):
         area1_layout.addLayout(button_layout)
         
         #Area 2 layout
-        #Create video widget
-        self.video_widget = QVideoWidget()
-        self.media_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-        self.media_player.setVideoOutput(self.video_widget)
-
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        #need to change later
-        video_path = os.path.join(script_dir, "../video/example.mp4")
-        video_url = QUrl.fromLocalFile(video_path)
-        self.media_player.setMedia(QMediaContent(video_url))
-        
-        #Play buttton
-        self.play_button = QPushButton()
-        self.play_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-
-        #Video Slider
-        self.position_slider = QSlider(Qt.Horizontal)
-        self.position_slider.setRange(0, 0)
-        self.position_slider.sliderMoved.connect(self.set_position)
-
-        pannel_layout = QHBoxLayout()
-        pannel_layout.addWidget(self.download_button())
-        pannel_layout.addWidget(self.play_button)
-        pannel_layout.addWidget(self.position_slider)
-
-        self.play_button.clicked.connect(self.play_video)
-        self.media_player.stateChanged.connect(self.icon_changed)
-        self.media_player.positionChanged.connect(self.position_changed)
-        self.media_player.durationChanged.connect(self.duration_changed)
-        self.position_slider.sliderMoved.connect(self.set_position)
-
+        self.video_widget()
         area2_layout =  QVBoxLayout()
-        area2_layout.addWidget(self.video_widget)
-        area2_layout.addLayout(pannel_layout)
+        area2_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        area2_layout.addWidget(self.video_widget, alignment=Qt.AlignCenter)
+        area2_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        area2_layout.addLayout(self.pannel_layout)
 
         #Vertical line
         vline1 = QFrame()

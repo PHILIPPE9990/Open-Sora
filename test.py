@@ -1,40 +1,33 @@
-from PyQt5.QtWidgets import QApplication, QLineEdit, QVBoxLayout, QLabel, QPushButton, QWidget
+import cv2, os
 
+# Open the video file
 
-class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Minimum Length Validation")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+        #need to change later
+video_path = os.path.join(script_dir, "../video/")
 
-        # Create widgets
-        self.label = QLabel("Please enter at least 5 characters:", self)
-        self.input = QLineEdit(self)
-        self.feedback = QLabel("", self)
-        self.feedback.setStyleSheet("color: red;")  # Set feedback text color
+cap = cv2.VideoCapture(video_path+"sample_0000.mp4")
 
-        # Button to trigger validation
-        self.submit_button = QPushButton("Submit", self)
-        self.submit_button.clicked.connect(self.validate_input)
+# Get the video frame width and height
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # Layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.label)
-        layout.addWidget(self.input)
-        layout.addWidget(self.feedback)
-        layout.addWidget(self.submit_button)
-        self.setLayout(layout)
+# Create a VideoWriter object to save the output video
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for output video
+out = cv2.VideoWriter(video_path+"output.mp4", fourcc, 30.0, (256, 144))
 
-    def validate_input(self):
-        text = self.input.text()
-        if len(text) < 5:
-            self.feedback.setText("Error: Input must be at least 5 characters!")
-        else:
-            self.feedback.setText("Success: Valid input!")
-            self.feedback.setStyleSheet("color: green;")
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
 
+    # Resize the frame with anti-aliasing
+    frame_resized = cv2.resize(frame, (256, 144), interpolation=cv2.INTER_LANCZOS4)
 
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-    app.exec_()
+    # Write the processed frame to the output video
+    out.write(frame_resized)
+
+# Release the video objects
+cap.release()
+out.release()
+cv2.destroyAllWindows()
