@@ -9,6 +9,7 @@ from colossalai.cluster import DistCoordinator
 from mmengine.runner import set_random_seed
 from tqdm import tqdm
 
+
 from opensora.acceleration.parallel_states import set_sequence_parallel_group
 from opensora.datasets import save_sample
 from opensora.datasets.aspect import get_image_size, get_num_frames
