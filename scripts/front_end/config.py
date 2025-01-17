@@ -1,8 +1,8 @@
 
 
 #Dimension
-height = 1920
-width = 1089
+height = 700
+width = 700
 #Label
 desc = "Description"
 video_length = "Video duration"
