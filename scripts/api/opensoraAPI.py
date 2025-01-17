@@ -1,0 +1,15 @@
+import subprocess
+
+def runTerminalCommand(desc, videoLength, resolution):
+
+    cmd  = [
+        "python", "scripts/inference.py", "configs/opensora-v1-2/inference/sample.py",
+        "--num-frames", videoLength,
+        "--resolution", resolution,
+        "--aspect-ratio", "9:16",
+        "--prompt", desc
+    ]
+    
+    print(cmd)
+    subprocess.run(cmd)
+

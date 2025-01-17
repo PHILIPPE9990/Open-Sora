@@ -1,12 +1,16 @@
 import os
 import sys
-import config
+from front_end import config
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy
 from PyQt5.QtCore import Qt, QUrl
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 #from PyQt5.QtGui import QIcon #Windows icon (later)
+
+#File
+from front_end import config
+from api import opensoraAPI
 
 #Main window class
 class MainWindow(QMainWindow):
@@ -119,7 +123,7 @@ class MainWindow(QMainWindow):
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         #need to change later
-        video_path = os.path.join(script_dir, "../video/sample_0000.mp4")
+        video_path = os.path.join(script_dir, "../samples/samples/sample_0000.mp4")
         video_url = QUrl.fromLocalFile(video_path)
         self.media_player.setMedia(QMediaContent(video_url))
 
@@ -183,7 +187,6 @@ class MainWindow(QMainWindow):
         error_flag = False
         self.resetError()
         desc = self.description_input.toPlainText()
-        print(desc)
 
         #description validation
         if len(desc) < 5:
@@ -199,6 +202,19 @@ class MainWindow(QMainWindow):
         if(not self.resolution_button_group.checkedButton()):
             self.resolution_button_feeback.setText(config.Error_option)
             error_flag = True
+        
+        if(error_flag == False):
+           self.submit()
+    
+    def submit(self):
+
+        #Get user inputs
+        desc = self.description_input.toPlainText()
+        video_length = self.vl_button_group.checkedButton().text()
+        resolution = self.resolution_button_group.checkedButton().text()
+        
+        opensoraAPI.runTerminalCommand(desc, video_length, resolution)
+
 
     #Reset error message
     def resetError(self):
