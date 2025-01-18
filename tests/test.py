@@ -1,47 +1,61 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction
+import os
+from PyQt5 import QtCore, QtGui, QtWidgets 
+from PyQt5.QtGui import QMovie 
+from PyQt5.QtCore import Qt 
 
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class LoadingGif(object): 
 
-        self.setWindowTitle("Menu Bar Example")
-        self.setGeometry(100, 100, 600, 400)
+	def mainUI(self, FrontWindow): 
+		FrontWindow.setObjectName("FTwindow") 
+		FrontWindow.resize(700, 700) 
+		self.centralwidget = QtWidgets.QWidget(FrontWindow) 
+		self.centralwidget.setObjectName("main-widget") 
 
-        # Create the menu bar
-        menu_bar = self.menuBar()
+		# Label Create 
+		self.label = QtWidgets.QLabel(self.centralwidget) 
+		# self.label.setGeometry(QtCore.QRect(25, 25, 200, 200)) 
+		# self.label.setMinimumSize(QtCore.QSize(250, 250)) 
+		# self.label.setMaximumSize(QtCore.QSize(250, 250)) 
+		self.label.setObjectName("lb1") 
+		
+		FrontWindow.setCentralWidget(self.centralwidget) 
 
-        # Add a "File" menu
-        file_menu = menu_bar.addMenu("File")
+		# Loading the GIF 
+        #need to change later
+		script_dir = os.path.dirname(os.path.abspath(__file__))
+		image_path = os.path.join(script_dir, "../image/game_loading.gif")
 
-        # Add actions to the "File" menu
-        open_action = QAction("Open", self)
-        save_action = QAction("Save", self)
-        exit_action = QAction("Exit", self)
+		self.movie = QMovie(image_path) 
+		self.label.setMovie(self.movie) 
 
-        file_menu.addAction(open_action)
-        file_menu.addAction(save_action)
-        file_menu.addSeparator()  # Add a separator
-        file_menu.addAction(exit_action)
-
-        # Add a "Help" menu
-        help_menu = menu_bar.addMenu("Help")
-        about_action = QAction("About", self)
-        help_menu.addAction(about_action)
-
-        # Connect actions to methods
-        exit_action.triggered.connect(self.close)  # Close the application
-        about_action.triggered.connect(self.show_about)
-
-    def show_about(self):
-        print("This is a simple PyQt application with a menu bar.")
+		self.startAnimation() 
+		self.watcher = QtCore.QFileSystemWatcher()
+		self.watcher.addPath(os.path.join(script_dir, "../samples/samples/"))
+		self.watcher.directoryChanged.connect(self.check_for_completed)
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
+	# Start Animation 
+	def startAnimation(self): 
+		self.movie.start() 
 
-    main_window = MainWindow()
-    main_window.show()
+	# Stop Animation(According to need) 
+	def stopAnimation(self): 
+		self.movie.stop()
+		self.label.hide()
+		
+	def check_for_completed(self, path):
 
-    sys.exit(app.exec_())
+		for file_name in os.listdir(path):
+			if file_name.endswith('.mp4'):
+				self.stopAnimation()
+				break
+
+
+app = QtWidgets.QApplication(sys.argv) 
+window = QtWidgets.QMainWindow() 
+demo = LoadingGif() 
+demo.mainUI(window) 
+window.show() 
+sys.exit(app.exec_()) 
