@@ -1,33 +1,47 @@
-import cv2, os
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction
 
-# Open the video file
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-        #need to change later
-video_path = os.path.join(script_dir, "../video/")
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-cap = cv2.VideoCapture(video_path+"sample_0000.mp4")
+        self.setWindowTitle("Menu Bar Example")
+        self.setGeometry(100, 100, 600, 400)
 
-# Get the video frame width and height
-frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        # Create the menu bar
+        menu_bar = self.menuBar()
 
-# Create a VideoWriter object to save the output video
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for output video
-out = cv2.VideoWriter(video_path+"output.mp4", fourcc, 30.0, (256, 144))
+        # Add a "File" menu
+        file_menu = menu_bar.addMenu("File")
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+        # Add actions to the "File" menu
+        open_action = QAction("Open", self)
+        save_action = QAction("Save", self)
+        exit_action = QAction("Exit", self)
 
-    # Resize the frame with anti-aliasing
-    frame_resized = cv2.resize(frame, (256, 144), interpolation=cv2.INTER_LANCZOS4)
+        file_menu.addAction(open_action)
+        file_menu.addAction(save_action)
+        file_menu.addSeparator()  # Add a separator
+        file_menu.addAction(exit_action)
 
-    # Write the processed frame to the output video
-    out.write(frame_resized)
+        # Add a "Help" menu
+        help_menu = menu_bar.addMenu("Help")
+        about_action = QAction("About", self)
+        help_menu.addAction(about_action)
 
-# Release the video objects
-cap.release()
-out.release()
-cv2.destroyAllWindows()
+        # Connect actions to methods
+        exit_action.triggered.connect(self.close)  # Close the application
+        about_action.triggered.connect(self.show_about)
+
+    def show_about(self):
+        print("This is a simple PyQt application with a menu bar.")
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    main_window = MainWindow()
+    main_window.show()
+
+    sys.exit(app.exec_())

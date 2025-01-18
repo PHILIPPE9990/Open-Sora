@@ -1,7 +1,7 @@
 import os
 import sys
 from front_end import config
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu
 from PyQt5.QtCore import Qt, QUrl
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -19,9 +19,29 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("AI-Driven Generation of Customized Publicity Content")
         self.setGeometry(0, 0, config.height, config.width)
-        self.initUI()
-        #self.setWindowIcon() #setWindowIcon
 
+        self.stacked_widget = QStackedWidget()
+        self.stacked_widget.addWidget(self.mainPage())
+        self.stacked_widget.addWidget(self.newPage())
+        self.stacked_widget.currentChanged.connect(self.updateMenuBar)
+
+        self.setCentralWidget(self.stacked_widget)
+
+        #Menu bar
+        self.menu_bar = self.menuBar()
+        self.action_menu = QMenu(config.action_menu_label, self)
+        self.return_mainpage = QAction(config.action_menu_action_return, self)
+        self.return_mainpage.triggered.connect(self.switch_to_main_page)
+
+        #self.setWindowIcon() #setWindowIcon
+    
+    #Update menu bar
+    def updateMenuBar(self, index):
+        self.menu_bar.clear()
+        if index == 1:
+            self.menu_bar.addMenu(self.action_menu)
+            self.action_menu.addAction(self.return_mainpage)
+    
     #Description
     def description(self):
     
@@ -237,10 +257,10 @@ class MainWindow(QMainWindow):
         self.resolution_button_group.setExclusive(True)
 
     #Initialize user interface
-    def initUI(self):
+    def newPage(self):
 
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        page = QWidget()
+        self.setCentralWidget(page)
         
         #Prompt
         self.description()
@@ -293,7 +313,32 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(vline1)
         main_layout.addLayout(area2_layout,7)  # Placeholder for the second area
 
-        central_widget.setLayout(main_layout)
+        page.setLayout(main_layout)
+        return page
+    
+    def mainPage(self):
+
+        mainPage = QWidget()
+        mainPage_layout = QVBoxLayout()
+
+        mainPage_label = QLabel("Welcome to Philippe Sora", self)
+        mainPage_label.setStyleSheet("font-size: 40px;")
+
+        button = QPushButton("Start")
+        button.clicked.connect(self.switch_to_new_page)
+        button.setFixedSize(300, 50)
+
+        mainPage_layout.addWidget(mainPage_label,alignment=Qt.AlignCenter)
+        mainPage_layout.addWidget(button, alignment=Qt.AlignCenter)
+
+        mainPage.setLayout(mainPage_layout)
+        return mainPage
+    
+    def switch_to_main_page(self):
+        self.stacked_widget.setCurrentIndex(0)
+
+    def switch_to_new_page(self):
+        self.stacked_widget.setCurrentIndex(1)
 
 def main():
     app = QApplication(sys.argv)

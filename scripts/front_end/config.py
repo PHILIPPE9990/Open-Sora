@@ -3,6 +3,9 @@
 #Dimension
 height = 700
 width = 700
+#Menu
+action_menu_label = "Action"
+action_menu_action_return = "Return to main menu"
 #Label
 desc = "Description"
 video_length = "Video duration"
