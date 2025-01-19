@@ -3,7 +3,7 @@ import sys
 from front_end import config
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal
 from PyQt5.QtGui import QMovie
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -13,6 +13,18 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 #File
 from front_end import config
 from api import opensoraAPI
+
+class CommandThread(QThread):
+    command_finished = pyqtSignal()
+    
+    def __init__(self, desc, video_length, resolution):
+        super().__init__()
+        self.desc = desc
+        self.video_length = video_length
+        self.resolution = resolution
+
+    def run(self):
+        opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
 
 #Main window class
 class MainWindow(QMainWindow):
@@ -236,12 +248,14 @@ class MainWindow(QMainWindow):
         
         self.gif_label.setVisible(True)
         self.startGIF()
-        
-        opensoraAPI.runTerminalCommand(desc, video_length, resolution)
 
-        self.watcher = QtCore.QFileSystemWatcher()
-        self.watcher.addPath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/"))
-        self.watcher.directoryChanged.connect(self.check_for_completed)
+        self.thread = CommandThread(desc, video_length, resolution)
+        self.thread.command_finished.connect(self.check_for_completed)
+        self.thread.start()
+
+        # self.watcher = QtCore.QFileSystemWatcher()
+        # self.watcher.addPath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/"))
+        # self.watcher.directoryChanged.connect()
     
     def check_for_completed(self, path):
         for file_name in os.listdir(path):
@@ -300,7 +314,6 @@ class MainWindow(QMainWindow):
     
             if os.path.isfile(file_path):
                 os.remove(file_path) 
-
 
     #Initialize user interface
     def newPage(self):
