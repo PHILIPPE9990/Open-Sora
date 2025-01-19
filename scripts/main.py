@@ -1,8 +1,10 @@
 import os
 import sys
 from front_end import config
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu
 from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QMovie
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
@@ -141,11 +143,10 @@ class MainWindow(QMainWindow):
 
         self.video_widget.setFixedSize(800, 600) 
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
         #need to change later
-        video_path = os.path.join(script_dir, "../samples/samples/sample_0000.mp4")
-        video_url = QUrl.fromLocalFile(video_path)
-        self.media_player.setMedia(QMediaContent(video_url))
+        # video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
+        # video_url = QUrl.fromLocalFile(video_path)
+        # self.media_player.setMedia(QMediaContent(video_url))
 
         #self.media_player.mediaStatusChanged.connect(self.update_download_button_status)
         
@@ -233,8 +234,33 @@ class MainWindow(QMainWindow):
         video_length = self.vl_button_group.checkedButton().text()
         resolution = self.resolution_button_group.checkedButton().text()
         
+        self.gif_label.setVisible(True)
+        self.startGIF()
+        
         opensoraAPI.runTerminalCommand(desc, video_length, resolution)
 
+        self.watcher = QtCore.QFileSystemWatcher()
+        self.watcher.addPath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/"))
+        self.watcher.directoryChanged.connect(self.check_for_completed)
+    
+    def check_for_completed(self, path):
+        for file_name in os.listdir(path):
+            if file_name.endswith('.mp4'):
+                
+                self.stopGIF()
+                self.gif_label.setVisible(False)
+
+                video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
+                video_url = QUrl.fromLocalFile(video_path)
+                self.media_player.setMedia(QMediaContent(video_url))
+
+                self.video_widget.setVisible(True)
+                self.media_player.play()
+                
+                self.download_b.setVisible(True)
+                self.play_button.setVisible(True)
+                self.position_slider.setVisible(True)
+                break
 
     #Reset error message
     def resetError(self):
@@ -244,6 +270,7 @@ class MainWindow(QMainWindow):
 
     #Reset form
     def resetForm(self):
+        self.resetError()
         self.description_input.clear()
         
         self.vl_button_group.setExclusive(False)
@@ -255,6 +282,25 @@ class MainWindow(QMainWindow):
         for b2 in self.resolution_button_group.buttons():
             b2.setChecked(False)
         self.resolution_button_group.setExclusive(True)
+
+        self.stopGIF()
+        self.gif_label.setVisible(False)
+        self.video_widget.setVisible(False)
+        self.download_b.setVisible(False)
+        self.play_button.setVisible(False)
+        self.position_slider.setVisible(False)
+
+        self.deleteSample()
+
+    def deleteSample(self):
+        
+        folder_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples")
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+    
+            if os.path.isfile(file_path):
+                os.remove(file_path) 
+
 
     #Initialize user interface
     def newPage(self):
@@ -285,22 +331,36 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(self.submit_b)
 
         #Area 1 layout
-        area1_layout = QVBoxLayout()
-        area1_layout.addWidget(self.description_group_box)
-        area1_layout.addWidget(self.description_feeback)
-        area1_layout.addWidget(self.radio_group_box)
-        area1_layout.addWidget(self.radio_button_feeback)
-        area1_layout.addWidget(self.resolution_group_box)
-        area1_layout.addWidget(self.resolution_button_feeback)
-        area1_layout.addLayout(button_layout)
+        self.area1_layout = QVBoxLayout()
+        self.area1_layout.addWidget(self.description_group_box)
+        self.area1_layout.addWidget(self.description_feeback)
+        self.area1_layout.addWidget(self.radio_group_box)
+        self.area1_layout.addWidget(self.radio_button_feeback)
+        self.area1_layout.addWidget(self.resolution_group_box)
+        self.area1_layout.addWidget(self.resolution_button_feeback)
+        self.area1_layout.addLayout(button_layout)
+
+        #Loading scene
+        self.gif_label = QLabel(self)
+        GIF_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../image/loading3.gif")
+        self.loading_scene = QMovie(GIF_path) 
+        self.gif_label.setMovie(self.loading_scene)
         
         #Area 2 layout
         self.video_widget()
-        area2_layout =  QVBoxLayout()
-        area2_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        area2_layout.addWidget(self.video_widget, alignment=Qt.AlignCenter)
-        area2_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        area2_layout.addLayout(self.pannel_layout)
+        self.area2_layout =  QVBoxLayout()
+        self.area2_layout.addSpacerItem(QSpacerItem(850, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.area2_layout.addWidget(self.gif_label, alignment=Qt.AlignCenter)
+        self.area2_layout.addWidget(self.video_widget, alignment=Qt.AlignCenter)
+        self.area2_layout.addSpacerItem(QSpacerItem(850, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.area2_layout.addLayout(self.pannel_layout)
+
+        #Initial set visibility to False
+        self.gif_label.setVisible(False)
+        self.video_widget.setVisible(False)
+        self.download_b.setVisible(False)
+        self.play_button.setVisible(False)
+        self.position_slider.setVisible(False)
 
         #Vertical line
         vline1 = QFrame()
@@ -309,9 +369,9 @@ class MainWindow(QMainWindow):
 
         #Main layout
         main_layout = QHBoxLayout()
-        main_layout.addLayout(area1_layout, 3)  # 3:7 ratio
+        main_layout.addLayout(self.area1_layout,3)  # 3:7 ratio
         main_layout.addWidget(vline1)
-        main_layout.addLayout(area2_layout,7)  # Placeholder for the second area
+        main_layout.addLayout(self.area2_layout,7)  # Placeholder for the second area
 
         page.setLayout(main_layout)
         return page
@@ -333,6 +393,12 @@ class MainWindow(QMainWindow):
 
         mainPage.setLayout(mainPage_layout)
         return mainPage
+    
+    def startGIF(self):
+        self.loading_scene.start()
+    
+    def stopGIF(self):
+        self.loading_scene.stop()
     
     def switch_to_main_page(self):
         self.stacked_widget.setCurrentIndex(0)
