@@ -250,12 +250,12 @@ class MainWindow(QMainWindow):
         self.startGIF()
 
         self.thread = CommandThread(desc, video_length, resolution)
-        self.thread.command_finished.connect(self.check_for_completed)
+        #self.thread.command_finished.connect(self.check_for_completed)
         self.thread.start()
 
-        # self.watcher = QtCore.QFileSystemWatcher()
-        # self.watcher.addPath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/"))
-        # self.watcher.directoryChanged.connect()
+        self.watcher = QtCore.QFileSystemWatcher()
+        self.watcher.addPath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/"))
+        self.watcher.directoryChanged.connect(self.check_for_completed)
     
     def check_for_completed(self, path):
         for file_name in os.listdir(path):
