@@ -220,8 +220,8 @@ class MainWindow(QMainWindow):
     def download(self):
 
         src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
-        #downloads_folder = "/mnt/c/Users/<your-username>/Downloads"
-        downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+        downloads_folder = "/mnt/c/Users/user/Downloads"
+        #downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 
         des_file_path = os.path.join(downloads_folder, f"video.mp4")
         counter = 1
