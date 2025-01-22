@@ -27,3 +27,8 @@ Error_option = "Error: Please select an option!"
 #Color
 resetColor = "#ff6666"
 submitColor = "#85e085"
+#Message
+download_success_title = "Download successful"
+download_success_message = "The file saved to:"
+Generated_success_title = "Generate successful"
+Generated_success_message = "Video generate successful!"

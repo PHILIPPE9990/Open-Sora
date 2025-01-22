@@ -1,8 +1,9 @@
 import os
+import shutil 
 import sys
 from front_end import config
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu
+from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox
 from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal
 from PyQt5.QtGui import QMovie
 
@@ -24,6 +25,7 @@ class CommandThread(QThread):
         self.resolution = resolution
 
     def run(self):
+        #print("Hello world")
         opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
 
 #Main window class
@@ -144,7 +146,7 @@ class MainWindow(QMainWindow):
     #     if status == QMediaPlayer.LoadedMedia:
     #         self.download_b.setEnabled(True)
     #     else:
-    #          self.download_b.setEnabled(False)
+    #         self.download_b.setEnabled(False)
 
     #Video widget
     def video_widget(self):
@@ -159,8 +161,6 @@ class MainWindow(QMainWindow):
         # video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
         # video_url = QUrl.fromLocalFile(video_path)
         # self.media_player.setMedia(QMediaContent(video_url))
-
-        #self.media_player.mediaStatusChanged.connect(self.update_download_button_status)
         
         #Play buttton
         self.play_button = QPushButton()
@@ -173,6 +173,7 @@ class MainWindow(QMainWindow):
 
         #Download button
         self.download_button()
+        self.download_b.clicked.connect(self.download)
 
         self.pannel_layout = QHBoxLayout()
         self.pannel_layout.addWidget(self.download_b)
@@ -214,6 +215,24 @@ class MainWindow(QMainWindow):
             self.play_button.setIcon(
                 self.style().standardIcon(QStyle.SP_MediaPlay)
             )
+
+    #download
+    def download(self):
+
+        src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
+        #downloads_folder = "/mnt/c/Users/<your-username>/Downloads"
+        downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+
+        des_file_path = os.path.join(downloads_folder, f"video.mp4")
+        counter = 1
+
+        while os.path.exists(des_file_path):
+            des_file_path = os.path.join(downloads_folder, f"video_{counter}.mp4")
+            counter += 1
+
+        shutil.copy(src_path, des_file_path)
+        self.show_information_alert(f"{config.download_success_title}", f"{config.download_success_message} {des_file_path}")
+
 
     #Validation
     def validate_input(self):
@@ -264,9 +283,13 @@ class MainWindow(QMainWindow):
                 self.stopGIF()
                 self.gif_label.setVisible(False)
 
+                self.show_information_alert(f"{config.Generated_success_title}", f"{config.Generated_success_message}")
+
                 video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
                 video_url = QUrl.fromLocalFile(video_path)
                 self.media_player.setMedia(QMediaContent(video_url))
+                
+                self.download_b.setEnabled(True)
 
                 self.video_widget.setVisible(True)
                 self.media_player.play()
@@ -296,6 +319,8 @@ class MainWindow(QMainWindow):
         for b2 in self.resolution_button_group.buttons():
             b2.setChecked(False)
         self.resolution_button_group.setExclusive(True)
+
+        self.download_b.setEnabled(False)
 
         self.stopGIF()
         self.gif_label.setVisible(False)
@@ -418,6 +443,15 @@ class MainWindow(QMainWindow):
 
     def switch_to_new_page(self):
         self.stacked_widget.setCurrentIndex(1)
+
+    def show_information_alert(self, title, message):
+
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()
 
 def main():
     app = QApplication(sys.argv)
