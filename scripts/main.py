@@ -4,7 +4,7 @@ import sys
 from front_end import config
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox
-from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QMovie
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -15,8 +15,20 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 from front_end import config
 from api import opensoraAPI
 
+def exception_hook(exctype, value, traceback):
+        print(f"🚨 Exception: {value}")
+        import traceback
+        traceback.print_exc()
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(f"An error occurred:\n{value}")
+        msg.setWindowTitle("Error")
+        msg.exec_()
+
 class CommandThread(QThread):
     command_finished = pyqtSignal()
+    error_signal = pyqtSignal(str)
     
     def __init__(self, desc, video_length, resolution):
         super().__init__()
@@ -25,8 +37,10 @@ class CommandThread(QThread):
         self.resolution = resolution
 
     def run(self):
-        #print("Hello world")
-        opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
+        try:
+            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
+        except Exception as e:
+            self.error_signal.emit(str(e))
 
 #Main window class
 class MainWindow(QMainWindow):
@@ -50,7 +64,7 @@ class MainWindow(QMainWindow):
         self.return_mainpage.triggered.connect(self.switch_to_main_page)
 
         #self.setWindowIcon() #setWindowIcon
-    
+
     #Update menu bar
     def updateMenuBar(self, index):
         self.menu_bar.clear()
@@ -259,7 +273,7 @@ class MainWindow(QMainWindow):
            self.submit()
     
     def submit(self):
-
+    
         #Get user inputs
         desc = self.description_input.toPlainText()
         video_length = self.vl_button_group.checkedButton().text()
@@ -269,12 +283,17 @@ class MainWindow(QMainWindow):
         self.startGIF()
 
         self.thread = CommandThread(desc, video_length, resolution)
+        self.thread.error_signal.connect(self.error_thread)
         #self.thread.command_finished.connect(self.check_for_completed)
         self.thread.start()
 
         self.watcher = QtCore.QFileSystemWatcher()
         self.watcher.addPath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/"))
         self.watcher.directoryChanged.connect(self.check_for_completed)
+
+    def error_thread(self, msg):
+        self.resetForm()
+        QMessageBox.critical(self, "Video Generation Error: ", msg)
     
     def check_for_completed(self, path):
         for file_name in os.listdir(path):
@@ -454,6 +473,7 @@ class MainWindow(QMainWindow):
         msg_box.exec_()
 
 def main():
+    sys.excepthook = exception_hook
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
