@@ -19,8 +19,8 @@ def sharpening():
 
 #Load a video
 script_dir = os.path.dirname(os.path.abspath(__file__))
-video_path = os.path.join(script_dir, "../video/")
-cap = cv2.VideoCapture(video_path+"sample_0001.mp4")
+video_path = os.path.join(script_dir, "../../video/")
+cap = cv2.VideoCapture(video_path+"sample_0000.mp4")
 
 #Width and Height
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
