@@ -1,6 +1,7 @@
 import os
 import shutil 
 import sys
+import re
 from front_end import config
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox
@@ -38,8 +39,8 @@ class CommandThread(QThread):
 
     def run(self):
         try:
-            print("Hello world")
-            #opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
+            #print("Hello world")
+            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
         except Exception as e:
             self.error_signal.emit(str(e))
 
@@ -77,8 +78,11 @@ class MainWindow(QMainWindow):
     def description(self):
     
         self.description_input = QTextEdit(self)
-        self.description_feeback = QLabel("", self)
-        self.description_feeback.setStyleSheet("color: red;")
+        self.description_feeback1 = QLabel("", self)
+        self.description_feeback1.setStyleSheet("color: red;")
+
+        self.description_feeback2 = QLabel("", self)
+        self.description_feeback2.setStyleSheet("color: red;")
 
         self.description_group_box = QGroupBox(config.desc, self)
         self.description_layout = QVBoxLayout()
@@ -248,6 +252,19 @@ class MainWindow(QMainWindow):
         shutil.copy(src_path, des_file_path)
         self.show_information_alert(f"{config.download_success_title}", f"{config.download_success_message} {des_file_path}")
 
+    def count_words(self, s):
+        return len(s.split())
+    
+    def check_length(self, n):
+        return 5 <= n <= 100
+    
+    #only English letters, spaces, or digits
+    def check_wordings(self, s):
+        if not re.match("^[a-zA-Z0-9\s]*$", s):
+            return False
+        else:
+            return True
+
 
     #Validation
     def validate_input(self):
@@ -256,8 +273,12 @@ class MainWindow(QMainWindow):
         desc = self.description_input.toPlainText()
 
         #description validation
-        if len(desc) < 5:
-            self.description_feeback.setText(config.Error_desc)
+        if(not self.check_wordings(desc)):
+            self.description_feeback1.setText(config.Error_desc1)
+            error_flag = True
+
+        if(self.check_wordings(desc) and not self.check_length(self.count_words(desc))):
+            self.description_feeback2.setText(config.Error_desc2)
             error_flag = True
 
         #video length validation
@@ -321,7 +342,8 @@ class MainWindow(QMainWindow):
 
     #Reset error message
     def resetError(self):
-        self.description_feeback.setText("")
+        self.description_feeback1.setText("")
+        self.description_feeback2.setText("")
         self.radio_button_feeback.setText("")
         self.resolution_button_feeback.setText("")
 
@@ -391,7 +413,8 @@ class MainWindow(QMainWindow):
         #Area 1 layout
         self.area1_layout = QVBoxLayout()
         self.area1_layout.addWidget(self.description_group_box)
-        self.area1_layout.addWidget(self.description_feeback)
+        self.area1_layout.addWidget(self.description_feeback1)
+        self.area1_layout.addWidget(self.description_feeback2)
         self.area1_layout.addWidget(self.radio_group_box)
         self.area1_layout.addWidget(self.radio_button_feeback)
         self.area1_layout.addWidget(self.resolution_group_box)
