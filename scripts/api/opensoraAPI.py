@@ -18,8 +18,8 @@ def runTerminalCommand(desc, videoLength, resolution):
     ]
     
     print(cmd)
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd)
 
     if result.returncode != 0:
-        raise Exception(f"Video Generation Error: {result.stderr}")
+        raise Exception(f"Video Generation Error: an error occur during video generation, please try again.")
 

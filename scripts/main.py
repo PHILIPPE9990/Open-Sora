@@ -38,7 +38,8 @@ class CommandThread(QThread):
 
     def run(self):
         try:
-            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
+            print("Hello world")
+            #opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
         except Exception as e:
             self.error_signal.emit(str(e))
 
@@ -465,7 +466,7 @@ class MainWindow(QMainWindow):
 
     def show_information_alert(self, title, message):
 
-        msg_box = QMessageBox()
+        msg_box = QMessageBox(self)
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
