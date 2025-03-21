@@ -293,6 +293,8 @@ class MainWindow(QMainWindow):
         
         if(error_flag == False):
            self.submit()
+        else:
+            raise ValueError(config.Error_prompt)
     
     def submit(self):
     
