@@ -25,6 +25,7 @@ def runTerminalCommand(desc, videoLength, resolution):
     #]
     # video length remove s and resolution seperate to two arguments manually
     
+    
     print(cmd)
     result = subprocess.run(cmd)
 
