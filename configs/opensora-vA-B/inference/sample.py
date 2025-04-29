@@ -1,5 +1,5 @@
 num_frames = 16
-frame_interval = 3
+frame_interval = 5
 fps = 24
 image_size = (240, 426)
 multi_resolution = "STDiT2"
@@ -28,11 +28,11 @@ text_encoder = dict(
 )
 scheduler = dict(
     type="iddpm",
-    num_sampling_steps=100,
+    num_sampling_steps=50,
     cfg_scale=7.0,
     cfg_channel=3,  # or None
 )
-dtype = "bf16"
+dtype = "fp16"
 
 # Condition
 prompt_path = "./assets/texts/t2v_samples.txt"
