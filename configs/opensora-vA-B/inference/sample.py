@@ -7,7 +7,7 @@ multi_resolution = "STDiT2"
 # Define model
 model = dict(
     type="STDiT2-XL/2",
-    from_pretrained="hpcai-tech/OpenSora-STDiT-v2-stage3",
+    from_pretrained="/home/philippe/FYP/Open-Sora/configs/optimized_model/my_model.pt",
     input_sq_size=512,
     qk_norm=True,
     qk_norm_legacy=True,
