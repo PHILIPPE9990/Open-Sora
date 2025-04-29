@@ -1,5 +1,5 @@
 num_frames = 16
-frame_interval = 5
+frame_interval = 4
 fps = 24
 image_size = (240, 426)
 multi_resolution = "STDiT2"
@@ -28,7 +28,7 @@ text_encoder = dict(
 )
 scheduler = dict(
     type="iddpm",
-    num_sampling_steps=50,
+    num_sampling_steps=45,
     cfg_scale=7.0,
     cfg_channel=3,  # or None
 )
