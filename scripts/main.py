@@ -4,9 +4,9 @@ import sys
 import re
 from front_end import config
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox, QListWidgetItem, QListWidget, QDialog, QStyleOption, QStyleFactory
 from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal, QTimer
-from PyQt5.QtGui import QMovie
+from PyQt5.QtGui import QMovie, QPixmap, QPalette, QBrush, QColor, QLinearGradient
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
@@ -43,6 +43,78 @@ class CommandThread(QThread):
             opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
         except Exception as e:
             self.error_signal.emit(str(e))
+
+class RefinementDialog(QDialog):
+
+    def __init__(self, original_prompt, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(config.prompt)
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setFixedSize(600, 400)
+
+        if parent:
+            self.move(parent.x() + 500, parent.y() + 150)
+        
+        self.original_prompt = original_prompt
+        self.selected_prompt = None
+        
+        self.setup_ui()
+        
+    def setup_ui(self):
+        layout = QVBoxLayout()
+        
+        # Original Prompt Display
+        original_group = QGroupBox(config.og_prompt)
+        original_layout = QVBoxLayout() 
+
+        self.original_input = QTextEdit()
+        self.original_input.setPlainText(self.original_prompt)
+        self.original_input.setStyleSheet(config.original_style)
+        self.original_input.setFixedHeight(40) 
+
+        original_layout.addWidget(self.original_input)
+        original_group.setLayout(original_layout)
+        
+        # Refined Suggestions
+        refined_group = QGroupBox(config.re_prompt)
+        refined_group.setStyleSheet(config.label_style)
+        refined_layout = QVBoxLayout()
+
+        self.refined_input = QTextEdit()
+        self.refined_input.setStyleSheet(config.original_style)
+
+        refined_layout.addWidget(self.refined_input)
+        refined_group.setLayout(refined_layout)
+        
+        # Button Row
+        button_layout = QHBoxLayout()
+        self.refresh_button = QPushButton(config.regenerate)
+        #self.refresh_button.setStyleSheet("background-color: #f39c12; color: white;")
+        
+        self.use_button = QPushButton(config.select)
+        #self.use_button.setStyleSheet("background-color: #2ecc71; color: white;")
+        
+        button_layout.addWidget(self.refresh_button)
+        button_layout.addWidget(self.use_button)
+        
+        # Assemble main layout
+        layout.addWidget(original_group)
+        layout.addWidget(refined_group)
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+        
+        # Connect signals
+        self.use_button.clicked.connect(self.accept_selection)
+        self.refresh_button.clicked.connect(self.generate_new_suggestions)
+    
+    def enable_use_button(self):
+        self.use_button.setEnabled(len(self.suggestion_list.selectedItems()) > 0)
+    
+    def accept_selection(self):
+        pass
+    
+    def generate_new_suggestions(self):
+        pass
 
 #Main window class
 class MainWindow(QMainWindow):
@@ -148,17 +220,23 @@ class MainWindow(QMainWindow):
     #Submit button
     def submit_button(self):
         self.submit_b = QPushButton(config.submit, self)
-        self.submit_b.setStyleSheet(f"background-color: {config.submitColor}; color: white;")
+        #self.submit_b.setStyleSheet(f"background-color: {config.submitColor}; color: white;")
 
     #Reset button
     def reset_button(self):
         self.reset_b = QPushButton(config.reset, self)
-        self.reset_b.setStyleSheet(f"background-color: {config.resetColor}; color: white;")
+        #self.reset_b.setStyleSheet(f"background-color: {config.resetColor}; color: white;")
     
     #Download button
     def download_button(self):
         self.download_b =QPushButton(config.download, self)
         self.download_b.setEnabled(False)
+
+    #Refine prompt button
+    def refine_prompt_button(self):
+        self.refine_prompt_b = QPushButton(config.prompt, self)
+        self.refine_prompt_b.setStyleSheet(f"{config.prompt_style}") 
+        self.refine_prompt_b.clicked.connect(self.show_refinement_dialog)
 
     # #Update download button status
     # def update_download_button_status(self, status):
@@ -166,6 +244,16 @@ class MainWindow(QMainWindow):
     #         self.download_b.setEnabled(True)
     #     else:
     #         self.download_b.setEnabled(False)
+    def show_refinement_dialog(self):
+        current_prompt = self.description_input.toPlainText()
+        # if not current_prompt.strip():
+        #     self.show_information_alert("Empty Prompt", "Please enter a prompt to refine")
+        #     return
+
+        dialog = RefinementDialog(current_prompt, self)
+        if dialog.exec_() == QDialog.Accepted:
+            self.description_input.setPlainText(dialog.selected_prompt)
+
 
     #Video widget
     def video_widget(self):
@@ -264,7 +352,6 @@ class MainWindow(QMainWindow):
             return False
         else:
             return True
-
 
     #Validation
     def validate_input(self):
@@ -389,9 +476,13 @@ class MainWindow(QMainWindow):
 
         page = QWidget()
         self.setCentralWidget(page)
-        
+
         #Prompt
         self.description()
+
+        #Prompt Refine
+        self.refine_prompt_button()
+        #self.refine_prompt_b.clicked.connect()
         
         #Redio button
         self.video_length()
@@ -415,6 +506,7 @@ class MainWindow(QMainWindow):
         #Area 1 layout
         self.area1_layout = QVBoxLayout()
         self.area1_layout.addWidget(self.description_group_box)
+        self.area1_layout.addWidget(self.refine_prompt_b)
         self.area1_layout.addWidget(self.description_feeback1)
         self.area1_layout.addWidget(self.description_feeback2)
         self.area1_layout.addWidget(self.radio_group_box)
@@ -425,7 +517,7 @@ class MainWindow(QMainWindow):
 
         #Loading scene
         self.gif_label = QLabel(self)
-        GIF_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../image/loading3.gif")
+        GIF_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../image/loading4.gif")
         self.loading_scene = QMovie(GIF_path) 
         self.gif_label.setMovie(self.loading_scene)
         
@@ -460,21 +552,80 @@ class MainWindow(QMainWindow):
         return page
     
     def mainPage(self):
-
         mainPage = QWidget()
-        mainPage_layout = QVBoxLayout()
+        mainPage_layout = QVBoxLayout(mainPage)
+        
+        # Set background
+        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../image/bg.jpg")
+        if os.path.exists(bg_path):
+            palette = mainPage.palette()
+            palette.setBrush(QPalette.Window, QBrush(QPixmap(bg_path).scaled(
+                self.size(), 
+                Qt.KeepAspectRatioByExpanding,
+                Qt.SmoothTransformation
+            )))
+            mainPage.setPalette(palette)
+            mainPage.setAutoFillBackground(True)
 
-        mainPage_label = QLabel("Welcome to Philippe Sora", self)
-        mainPage_label.setStyleSheet("font-size: 40px;")
-
-        button = QPushButton("Start")
+        # Overlay widget - key changes here
+        overlay = QWidget(mainPage)
+        overlay.setStyleSheet("""
+            background-color: rgba(30, 30, 30, 0.8);  
+            border-radius: 4px ;
+        """)
+        overlay.setFixedSize(500, 300)
+        
+        # Critical: Add a layout to the overlay
+        overlay_layout = QVBoxLayout(overlay)
+        overlay_layout.setContentsMargins(0, 0, 0, 0)  # Remove default margins
+        
+        # Content widget - now fills the overlay
+        content = QWidget(overlay)
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(20, 20, 20, 20)  # Add internal padding
+        
+        # Label and button
+        mainPage_label = QLabel("Welcome to OpenSora")
+        mainPage_label.setStyleSheet("""
+            QLabel {
+                color: #e0e0e0;
+                font-weight: bold;
+                font-size: 32px;
+            }
+        """)
+        mainPage_label.setAlignment(Qt.AlignCenter)  # Directly set alignment
+        
+        button = QPushButton("🚀 Start")
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: #8310d5;  /* Purple background */
+                border: 1px solid #4b0082;   /* Dark purple border */
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #6a0dad;
+            }
+            QPushButton:pressed {
+                background-color: #4a148c;  /* Darker purple */
+            }
+        """)
         button.clicked.connect(self.switch_to_new_page)
-        button.setFixedSize(300, 50)
-
-        mainPage_layout.addWidget(mainPage_label,alignment=Qt.AlignCenter)
-        mainPage_layout.addWidget(button, alignment=Qt.AlignCenter)
-
-        mainPage.setLayout(mainPage_layout)
+        
+        # Add widgets to content layout
+        content_layout.addWidget(mainPage_label, 0, Qt.AlignCenter)
+        content_layout.addWidget(button, 0, Qt.AlignCenter)
+        
+        # Add stretch to push content to vertical center
+        content_layout.addStretch(1)
+        
+        # Add content to overlay
+        overlay_layout.addWidget(content, 0, Qt.AlignCenter) 
+        
+        # Center overlay in main page
+        mainPage_layout.addWidget(overlay, 0, Qt.AlignCenter)
+        
         return mainPage
     
     def startGIF(self):
@@ -501,6 +652,7 @@ class MainWindow(QMainWindow):
 def main():
     sys.excepthook = exception_hook
     app = QApplication(sys.argv)
+    app.setStyleSheet(config.global_style)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
