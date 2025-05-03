@@ -44,5 +44,5 @@ def generate_scene(topic):
     scene = generated_text[response_start:].strip()
     return scene
 
-x = generate_scene("sea")
-print(x)
+#x = generate_scene("sea")
+#print(x)

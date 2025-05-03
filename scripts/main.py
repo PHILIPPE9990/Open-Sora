@@ -14,6 +14,7 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 
 #File
 from front_end import config
+from back_end import llama
 from api import opensoraAPI
 
 def exception_hook(exctype, value, traceback):
@@ -114,6 +115,8 @@ class RefinementDialog(QDialog):
         self.use_button.setEnabled(len(self.suggestion_list.selectedItems()) > 0)
     
     def accept_selection(self):
+        text = self.original_input.toPlainText()
+        print(text)
         pass
     
     def generate_new_suggestions(self):
