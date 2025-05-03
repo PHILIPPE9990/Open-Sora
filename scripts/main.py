@@ -74,12 +74,15 @@ class RefinementDialog(QDialog):
         self.original_input = QTextEdit()
         self.original_input.setPlainText(self.original_prompt)
         self.original_input.setStyleSheet(config.original_style)
-        self.original_input.setFixedHeight(40) 
+        self.original_input.setFixedHeight(40)
+        self.og_feedback = QLabel("", self)
+        self.og_feedback.setStyleSheet("color: #ff0033;background: #383838;")
 
         original_layout.addWidget(self.original_input)
+        original_layout.addWidget(self.og_feedback)
         original_group.setLayout(original_layout)
         
-        # Refined Suggestions
+        # Refined Suggestion
         refined_group = QGroupBox(config.re_prompt)
         refined_group.setStyleSheet(config.label_style)
         refined_layout = QVBoxLayout()
@@ -111,16 +114,23 @@ class RefinementDialog(QDialog):
         self.use_button.clicked.connect(self.accept_selection)
         self.refresh_button.clicked.connect(self.generate_new_suggestions)
     
-    def enable_use_button(self):
-        self.use_button.setEnabled(len(self.suggestion_list.selectedItems()) > 0)
+    # def enable_use_button(self):
+    #     self.use_button.setEnabled(len(self.suggestion_list.selectedItems()) > 0)
     
     def accept_selection(self):
-        text = self.original_input.toPlainText()
-        print(text)
-        pass
-    
+        self.selected_prompt = self.refined_input.toPlainText()
+        self.accept()
+
     def generate_new_suggestions(self):
-        pass
+        if not self.original_input.toPlainText().strip():
+            #QMessageBox.warning(self, "Empty Input", "Please enter a subject!")
+            self.og_feedback.setText("Please enter a subject!")
+            return
+        self.refined_input.setText(config.dia_load)
+        QApplication.processEvents()
+        text = self.original_input.toPlainText()
+        retext=llama.generate_scene(text)
+        self.refined_input.setText(retext)
 
 #Main window class
 class MainWindow(QMainWindow):
@@ -157,10 +167,10 @@ class MainWindow(QMainWindow):
     
         self.description_input = QTextEdit(self)
         self.description_feeback1 = QLabel("", self)
-        self.description_feeback1.setStyleSheet("color: red;")
+        self.description_feeback1.setStyleSheet("color: #ff0033;")
 
         self.description_feeback2 = QLabel("", self)
-        self.description_feeback2.setStyleSheet("color: red;")
+        self.description_feeback2.setStyleSheet("color: #ff0033;")
 
         self.description_group_box = QGroupBox(config.desc, self)
         self.description_layout = QVBoxLayout()
@@ -192,7 +202,7 @@ class MainWindow(QMainWindow):
         self.radio_group_box.setLayout(self.radio_layout)
 
         self.radio_button_feeback = QLabel("", self)
-        self.radio_button_feeback.setStyleSheet("color: red;")
+        self.radio_button_feeback.setStyleSheet("color: #ff0033;")
     
     #Resolution
     def resolution(self):
@@ -221,7 +231,7 @@ class MainWindow(QMainWindow):
         self.resolution_group_box.setLayout(self.resolution_layout)
 
         self.resolution_button_feeback = QLabel("", self)
-        self.resolution_button_feeback.setStyleSheet("color: red;")
+        self.resolution_button_feeback.setStyleSheet("color: #ff0033;")
     
     #Submit button
     def submit_button(self):
