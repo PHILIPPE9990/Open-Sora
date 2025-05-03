@@ -9,21 +9,21 @@ def runTerminalCommand(desc, videoLength, resolution, model):
     two_levels_up = os.path.abspath(os.path.join(current_dir, '..'))
     os.chdir(two_levels_up)
 
-    cmd  = [
-        "python", "scripts/inference.py", "configs/opensora-v1-2/inference/sample.py",
-        "--num-frames", videoLength,
-        "--resolution", resolution,
-        "--aspect-ratio", "9:16",
-        "--prompt", desc
-    ]
+    # cmd  = [
+    #     "python", "scripts/inference.py", "configs/opensora-v1-2/inference/sample.py",
+    #     "--num-frames", videoLength,
+    #     "--resolution", resolution,
+    #     "--aspect-ratio", "9:16",
+    #     "--prompt", desc
+    # ]
 
-    #cmd = [
-    #    "python", "scripts/inference.py", "configs/opensora-v1-1/inference/sample.py",
-    #    "--prompt", desc,
-    #    "--num-frames", "2",
-    #    "--image-size", "144", "256"
-    #]
-    # video length remove s and resolution seperate to two arguments manually
+    cmd = [
+       "python", "scripts/inference.py", "configs/opensora-vA-B/inference/sample.py",
+       "--prompt", desc,
+       "--num-frames", "2",
+       "--image-size", "144", "256"
+    ]
+    #video length remove s and resolution seperate to two arguments manually
     
     
     print(cmd)

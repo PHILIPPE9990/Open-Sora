@@ -35,7 +35,7 @@ class CommandThread(QThread):
     command_finished = pyqtSignal()
     error_signal = pyqtSignal(str)
     
-    def __init__(self, desc, video_length, resolution):
+    def __init__(self, desc, video_length, resolution, model):
         super().__init__()
         self.desc = desc
         self.video_length = video_length
@@ -421,11 +421,12 @@ class MainWindow(QMainWindow):
         desc = self.description_input.toPlainText()
         video_length = self.vl_button_group.checkedButton().text()
         resolution = self.resolution_button_group.checkedButton().text()
+        model = self.model_combo.currentText()
         
         self.gif_label.setVisible(True)
         self.startGIF()
 
-        self.thread = CommandThread(desc, video_length, resolution)
+        self.thread = CommandThread(desc, video_length, resolution, model)
         self.thread.error_signal.connect(self.error_thread)
         #self.thread.command_finished.connect(self.check_for_completed)
         self.thread.start()
@@ -662,6 +663,7 @@ class MainWindow(QMainWindow):
 
         msg_box = QMessageBox(self)
         msg_box.setIcon(QMessageBox.Information)
+        msg_box.move(parent.x() + 500, parent.y() + 150)
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
         msg_box.setStandardButtons(QMessageBox.Ok)
