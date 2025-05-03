@@ -42,6 +42,13 @@ download_success_title = "Download successful"
 download_success_message = "The file saved to:"
 Generated_success_title = "Generate successful"
 Generated_success_message = "Video generate successful!"
+#Model
+models = {
+    "OpenSora v1.2 (High quality, low speed)": "opensora-v1-2",
+    "OpenSora v1.1 (Medium quality, speed)": "opensora-v1-1",
+    "OpenSora vA.B (Low quality, high speed)": "opensora-vA-B"
+}
+default_model = "OpenSora v1.2 (High quality, low speed)"
 #Style
 label_style = '''
 '''
@@ -60,7 +67,7 @@ global_style = """
     
     /* Group Boxes */
     QGroupBox {
-        border: 1px solid #ffffff;  
+        border: 1px solid #2d2d2d;  
         border-radius: 4px;
         margin-top: 1ex;
         background-color: #383838;  /* Slightly lighter grey */
@@ -73,6 +80,49 @@ global_style = """
         padding: 0 5px;
         color: #ffffff;  /* Light grey */
         font-size: 12px;
+    }
+
+    QComboBox {
+        background-color: #383838;
+        color: white;
+        font-weight: bold;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 5px;
+        min-width: 100px;
+    }
+    
+    QComboBox:hover {
+        border: 1px solid #777;
+    }
+    
+    QComboBox::drop-down {
+        subcontrol-origin: padding;
+        subcontrol-position: top right;
+        width: 20px;
+        border-left-width: 1px;
+        border-left-color: #555;
+        border-left-style: solid;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+    
+    QComboBox::down-arrow {
+        image: url(../../image/down_arrow.png);  /* Optional: replace with your own arrow icon */
+        width: 12px;
+        height: 12px;
+    }
+    
+    QComboBox QAbstractItemView {
+        background-color: #383838;
+        color: white;
+        selection-background-color: #2a82da;
+        border: 1px solid #555;
+    }
+    
+    QComboBox QScrollBar:vertical {
+        background: #383838;
+        width: 10px;
     }
     
     /* Text Inputs */

@@ -4,7 +4,7 @@ import sys
 import re
 from front_end import config
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox, QListWidgetItem, QListWidget, QDialog, QStyleOption, QStyleFactory
+from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QLabel, QTextEdit, QPushButton, QHBoxLayout, QWidget, QGroupBox, QVBoxLayout, QRadioButton, QButtonGroup, QFrame, QSlider, QStyle, QSpacerItem, QSizePolicy, QAction, QMenu, QMessageBox, QDialog, QComboBox
 from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QMovie, QPixmap, QPalette, QBrush, QColor, QLinearGradient
 
@@ -40,11 +40,12 @@ class CommandThread(QThread):
         self.desc = desc
         self.video_length = video_length
         self.resolution = resolution
+        self.model = model
 
     def run(self):
         try:
             #print("Hello world")
-            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution)
+            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution, self.model)
         except Exception as e:
             self.error_signal.emit(str(e))
 
@@ -271,6 +272,20 @@ class MainWindow(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             self.description_input.setPlainText(dialog.selected_prompt)
 
+    def model_selection(self):
+        self.model_group_box = QGroupBox("Select Model", self)
+        self.model_layout = QVBoxLayout()
+        
+        self.model_combo = QComboBox()
+        for model_name in config.models.keys():
+            self.model_combo.addItem(model_name)
+        
+        # Set default model
+        default_index = list(config.models.keys()).index(config.default_model)
+        self.model_combo.setCurrentIndex(default_index)
+        
+        self.model_layout.addWidget(self.model_combo)
+        self.model_group_box.setLayout(self.model_layout)
 
     #Video widget
     def video_widget(self):
@@ -495,6 +510,9 @@ class MainWindow(QMainWindow):
         page.setStyleSheet(config.global_style)
         self.setCentralWidget(page)
 
+        #Model selection
+        self.model_selection()
+
         #Prompt
         self.description()
 
@@ -523,6 +541,7 @@ class MainWindow(QMainWindow):
 
         #Area 1 layout
         self.area1_layout = QVBoxLayout()
+        self.area1_layout.addWidget(self.model_group_box) 
         self.area1_layout.addWidget(self.description_group_box)
         self.area1_layout.addWidget(self.refine_prompt_b)
         self.area1_layout.addWidget(self.description_feeback1)

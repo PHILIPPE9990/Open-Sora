@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def runTerminalCommand(desc, videoLength, resolution):
+def runTerminalCommand(desc, videoLength, resolution, model):
 
     current_dir = os.getcwd()
     
