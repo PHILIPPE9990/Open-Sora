@@ -16,6 +16,8 @@ sixteen_second = "16s"
 resolution = "Resolution"
 og_prompt = "Please enter a subject:"
 re_prompt = "AI Suggestions, Operated by Meta Llama2:"
+dia_label = "Welcome to OpenSora"
+dia_button = "🚀 Start"
 _144p = "144p"
 _240p = "240p"
 _360p = "360p"
@@ -182,3 +184,26 @@ global_style = """
         background-color: #6a0dad;
     }
 """
+dialog_label = '''
+QLabel {
+    color: #e0e0e0;
+    font-weight: bold;
+    font-size: 32px;
+    padding-bottom:30px;
+}
+'''
+dialog_button = '''
+QPushButton {
+    background-color: #8310d5;  /* Purple background */
+    border: 1px solid #ffffff;   /* Dark purple border */
+    color: #ffffff;
+    font-weight: bold;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #6a0dad;
+}
+QPushButton:pressed {
+    background-color: #4a148c;  /* Darker purple */
+}
+'''

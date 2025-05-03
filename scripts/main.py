@@ -22,9 +22,12 @@ def exception_hook(exctype, value, traceback):
         traceback.print_exc()
 
         msg = QMessageBox()
+        msg.setStyleSheet(config.global_style)
         msg.setIcon(QMessageBox.Critical)
         msg.setText(f"An error occurred:\n{value}")
         msg.setWindowTitle("Error")
+
+        msg.move(500, 250)
         msg.exec_()
 
 class CommandThread(QThread):
@@ -62,7 +65,7 @@ class RefinementDialog(QDialog):
         
     def setup_ui(self):
         layout = QVBoxLayout()
-        
+
         # Original Prompt Display
         original_group = QGroupBox(config.og_prompt)
         original_layout = QVBoxLayout() 
@@ -251,6 +254,7 @@ class MainWindow(QMainWindow):
         #     return
 
         dialog = RefinementDialog(current_prompt, self)
+        dialog.setStyleSheet(config.global_style)
         if dialog.exec_() == QDialog.Accepted:
             self.description_input.setPlainText(dialog.selected_prompt)
 
@@ -475,6 +479,7 @@ class MainWindow(QMainWindow):
     def newPage(self):
 
         page = QWidget()
+        page.setStyleSheet(config.global_style)
         self.setCentralWidget(page)
 
         #Prompt
@@ -585,32 +590,13 @@ class MainWindow(QMainWindow):
         content_layout.setContentsMargins(20, 20, 20, 20)  # Add internal padding
         
         # Label and button
-        mainPage_label = QLabel("Welcome to OpenSora")
-        mainPage_label.setStyleSheet("""
-            QLabel {
-                color: #e0e0e0;
-                font-weight: bold;
-                font-size: 32px;
-            }
-        """)
+        mainPage_label = QLabel(config.dia_label)
+        mainPage_label.setStyleSheet(config.dialog_label)
         mainPage_label.setAlignment(Qt.AlignCenter)  # Directly set alignment
         
-        button = QPushButton("🚀 Start")
-        button.setStyleSheet("""
-            QPushButton {
-                background-color: #8310d5;  /* Purple background */
-                border: 1px solid #4b0082;   /* Dark purple border */
-                color: white;
-                padding: 6px 12px;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #6a0dad;
-            }
-            QPushButton:pressed {
-                background-color: #4a148c;  /* Darker purple */
-            }
-        """)
+        button = QPushButton(config.dia_button)
+        button.setStyleSheet(config.dialog_button)
+        button.setFixedSize(300, 50)
         button.clicked.connect(self.switch_to_new_page)
         
         # Add widgets to content layout
@@ -652,7 +638,7 @@ class MainWindow(QMainWindow):
 def main():
     sys.excepthook = exception_hook
     app = QApplication(sys.argv)
-    app.setStyleSheet(config.global_style)
+    #app.setStyleSheet(config.global_style)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
