@@ -35,17 +35,18 @@ class CommandThread(QThread):
     command_finished = pyqtSignal()
     error_signal = pyqtSignal(str)
     
-    def __init__(self, desc, video_length, resolution, model):
+    def __init__(self, desc, video_length, resolution, model, seed):
         super().__init__()
         self.desc = desc
         self.video_length = video_length
         self.resolution = resolution
         self.model = model
+        self.seed = seed
 
     def run(self):
         try:
             #print("Hello world")
-            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution, self.model)
+            opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution, self.model, self.seed)
         except Exception as e:
             self.error_signal.emit(str(e))
 
@@ -178,6 +179,30 @@ class MainWindow(QMainWindow):
        
         self.description_layout.addWidget(self.description_input)
         self.description_group_box.setLayout(self.description_layout)
+
+    def seed_selection(self):
+        self.seed_group_box = QGroupBox("Random Seed", self)
+        self.seed_layout = QVBoxLayout()
+        
+        # Create slider
+        self.seed_slider = QSlider(Qt.Horizontal)
+        self.seed_slider.setRange(0, 1024)  # Adjust range as needed
+        self.seed_slider.setValue(42)       # Default seed
+        self.seed_slider.setTickInterval(100)
+        self.seed_slider.setTickPosition(QSlider.TicksBelow)
+        
+        # Create display label
+        self.seed_value_label = QLabel("Seed: 42")
+        
+        # Connect signal
+        self.seed_slider.valueChanged.connect(self.update_seed_label)
+        
+        self.seed_layout.addWidget(self.seed_slider)
+        self.seed_layout.addWidget(self.seed_value_label)
+        self.seed_group_box.setLayout(self.seed_layout)
+
+    def update_seed_label(self, value):
+        self.seed_value_label.setText(f"Seed: {value}")
 
     #Duration
     def video_length(self):
@@ -378,9 +403,9 @@ class MainWindow(QMainWindow):
     def check_length(self, n):
         return 5 <= n <= 100
     
-    #only English letters, spaces, or digits
+    # Allows letters, numbers, whitespace, and common special characters
     def check_wordings(self, s):
-        if not re.match("^[a-zA-Z0-9\s]*$", s):
+        if not re.match(r'^[\w\s\-,.!?;:\'"()@#$%&*+/<=>\\^_`{|}~]*$', s):
             return False
         else:
             return True
@@ -422,11 +447,12 @@ class MainWindow(QMainWindow):
         video_length = self.vl_button_group.checkedButton().text()
         resolution = self.resolution_button_group.checkedButton().text()
         model = self.model_combo.currentText()
+        seed = self.seed_slider.value()
         
         self.gif_label.setVisible(True)
         self.startGIF()
 
-        self.thread = CommandThread(desc, video_length, resolution, model)
+        self.thread = CommandThread(desc, video_length, resolution, model, seed)
         self.thread.error_signal.connect(self.error_thread)
         #self.thread.command_finished.connect(self.check_for_completed)
         self.thread.start()
@@ -520,6 +546,9 @@ class MainWindow(QMainWindow):
         #Prompt Refine
         self.refine_prompt_button()
         #self.refine_prompt_b.clicked.connect()
+
+        #Seed selection
+        self.seed_selection()
         
         #Redio button
         self.video_length()
@@ -547,6 +576,7 @@ class MainWindow(QMainWindow):
         self.area1_layout.addWidget(self.refine_prompt_b)
         self.area1_layout.addWidget(self.description_feeback1)
         self.area1_layout.addWidget(self.description_feeback2)
+        self.area1_layout.addWidget(self.seed_group_box)
         self.area1_layout.addWidget(self.radio_group_box)
         self.area1_layout.addWidget(self.radio_button_feeback)
         self.area1_layout.addWidget(self.resolution_group_box)
@@ -663,7 +693,7 @@ class MainWindow(QMainWindow):
 
         msg_box = QMessageBox(self)
         msg_box.setIcon(QMessageBox.Information)
-        msg_box.move(parent.x() + 500, parent.y() + 150)
+        #msg_box.move(parent.x() + 500, parent.y() + 150)
         msg_box.setWindowTitle(title)
         msg_box.setText(message)
         msg_box.setStandardButtons(QMessageBox.Ok)

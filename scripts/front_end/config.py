@@ -82,6 +82,14 @@ global_style = """
         font-size: 12px;
     }
 
+    QGroupBox QLabel {
+        color: #ffffff;  /* Light grey */
+        font-weight: bold;
+        font-size: 14px;
+        padding: 5px;
+        background-color: #383838;
+    }
+
     QComboBox {
         background-color: #383838;
         color: white;
@@ -179,16 +187,24 @@ global_style = """
     }
     
     /* Slider */
+    QGroupBox QSlider{
+        border: 0px solid #ffffff;  
+        border-radius: 4px;
+        margin-top: 1ex;
+        background-color: #383838;  
+        padding: 10px;
+    }
+
     QSlider::groove:horizontal {
-        border: 1px solid #444444;
+        border: 2px solid #444444;
         height: 6px;
-        background: #383838;
+        background: #666666;
         margin: 2px 0;
         border-radius: 3px;
     }
     
     QSlider::handle:horizontal {
-        background: #6a0dad;
+        background: #00ff99;
         border: 1px solid #4b0082;
         width: 16px;
         margin: -4px 0;
