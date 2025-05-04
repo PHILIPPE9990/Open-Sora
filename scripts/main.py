@@ -46,6 +46,7 @@ class CommandThread(QThread):
     def run(self):
         try:
             #print("Hello world")
+            #print(self.desc, self.video_length, self.resolution, self.model, self.seed)
             opensoraAPI.runTerminalCommand(self.desc, self.video_length, self.resolution, self.model, self.seed)
         except Exception as e:
             self.error_signal.emit(str(e))
@@ -134,6 +135,35 @@ class RefinementDialog(QDialog):
         retext=llama.generate_scene(text)
         self.refined_input.setText(retext)
 
+class InformationAlert(QDialog):
+    def __init__(self, title, message, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setFixedSize(400, 200)
+        
+        if parent:
+            self.move(parent.x() + 500, parent.y() + 150)
+        
+        self.setup_ui(message)
+        
+    def setup_ui(self, message):
+        layout = QVBoxLayout()
+        
+        # Message label
+        self.message_label = QLabel(message)
+        self.message_label.setWordWrap(True)
+        self.message_label.setAlignment(Qt.AlignCenter)
+        
+        # OK button
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.accept)
+        
+        # Layout
+        layout.addWidget(self.message_label)
+        layout.addWidget(self.ok_button, alignment=Qt.AlignCenter)
+        
+        self.setLayout(layout)
 #Main window class
 class MainWindow(QMainWindow):
 
@@ -302,8 +332,8 @@ class MainWindow(QMainWindow):
         self.model_layout = QVBoxLayout()
         
         self.model_combo = QComboBox()
-        for model_name in config.models.keys():
-            self.model_combo.addItem(model_name)
+        for model_name, model_value in config.models.items():
+            self.model_combo.addItem(model_name, model_value)
         
         # Set default model
         default_index = list(config.models.keys()).index(config.default_model)
@@ -401,7 +431,7 @@ class MainWindow(QMainWindow):
         return len(s.split())
     
     def check_length(self, n):
-        return 5 <= n <= 100
+        return 3 <= n <= 100
     
     # Allows letters, numbers, whitespace, and common special characters
     def check_wordings(self, s):
@@ -446,7 +476,7 @@ class MainWindow(QMainWindow):
         desc = self.description_input.toPlainText()
         video_length = self.vl_button_group.checkedButton().text()
         resolution = self.resolution_button_group.checkedButton().text()
-        model = self.model_combo.currentText()
+        model = self.model_combo.currentData()
         seed = self.seed_slider.value()
         
         self.gif_label.setVisible(True)
@@ -499,6 +529,8 @@ class MainWindow(QMainWindow):
     def resetForm(self):
         self.resetError()
         self.description_input.clear()
+
+        self.seed_slider.setValue(42)
         
         self.vl_button_group.setExclusive(False)
         for b1 in self.vl_button_group.buttons():
@@ -690,14 +722,10 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(1)
 
     def show_information_alert(self, title, message):
-
-        msg_box = QMessageBox(self)
-        msg_box.setIcon(QMessageBox.Information)
-        #msg_box.move(parent.x() + 500, parent.y() + 150)
-        msg_box.setWindowTitle(title)
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec_()
+        dialog = InformationAlert(title, message, self)
+        dialog.setStyleSheet(config.global_style)
+        dialog.exec_()
+        
 
 def main():
     sys.excepthook = exception_hook
