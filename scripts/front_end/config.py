@@ -40,8 +40,6 @@ video_processing_sharpening_tip = "Makes edges and details more pronounced"
 video_processing_resize = "Upscale Resolution (480p)"
 video_processing_resize_tip = "Resizes the video to 480p resolution\n remain original if higher than 480p"  
 video_processing_note = "Note: Processing may take a few moments"
-
-
 Error_prompt = "Invalid input detected. Please follow the instructions carefully and try again."
 Error_desc1 = "Error: Prompt should only contain english \ncharacters and numbers!"
 Error_desc2 = "Error: Prompt length must be at least 3 words\n and at most 100 words!"
