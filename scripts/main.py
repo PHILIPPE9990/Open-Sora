@@ -617,7 +617,8 @@ class MainWindow(QMainWindow):
                 # self.current_video_path = video_path
                 # video_url = QUrl.fromLocalFile(video_path)
                 # self.media_player.setMedia(QMediaContent(video_url))
-                
+                self.reset_b.setEnabled(True)
+            
                 self.download_b.setEnabled(True)
 
                 self.video_widget.setVisible(True)
@@ -662,6 +663,8 @@ class MainWindow(QMainWindow):
         self.download_b.setVisible(False)
         self.play_button.setVisible(False)
         self.position_slider.setVisible(False)
+        self.process_button.setVisible(False)
+        self.reset_button_video.setVisible(False)
 
         self.set_inputs_enabled(True)
         self.deleteSample()

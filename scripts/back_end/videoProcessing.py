@@ -64,7 +64,7 @@ def video_processing(input_path, enable_anti_aliasing=True, enable_resize=True, 
     finally:
         cap.release()
         out.release()
-        cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()
     
     return "enhanced.mp4"
 
