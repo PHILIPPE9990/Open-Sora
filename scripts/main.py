@@ -552,8 +552,31 @@ class MainWindow(QMainWindow):
         else:
             raise ValueError(config.Error_prompt)
     
+    def set_inputs_enabled(self, enabled):
+        """Enable or disable all input widgets"""
+        # Text inputs
+        self.description_input.setEnabled(enabled)
+        
+        # Buttons
+        self.submit_b.setEnabled(enabled)
+        self.reset_b.setEnabled(enabled)
+        self.refine_prompt_b.setEnabled(enabled)
+        
+        # Radio buttons
+        for button in self.vl_button_group.buttons():
+            button.setEnabled(enabled)
+        for button in self.resolution_button_group.buttons():
+            button.setEnabled(enabled)
+            
+        # Slider
+        self.seed_slider.setEnabled(enabled)
+        
+        # Model selection
+        self.model_combo.setEnabled(enabled)
+
     def submit(self):
     
+        self.set_inputs_enabled(False)
         #Get user inputs
         desc = self.description_input.toPlainText()
         video_length = self.vl_button_group.checkedButton().text()
@@ -640,6 +663,7 @@ class MainWindow(QMainWindow):
         self.play_button.setVisible(False)
         self.position_slider.setVisible(False)
 
+        self.set_inputs_enabled(True)
         self.deleteSample()
 
     def deleteSample(self):
