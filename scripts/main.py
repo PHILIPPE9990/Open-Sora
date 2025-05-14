@@ -186,7 +186,7 @@ class VideoProcessingDialog(QDialog):
         
         # Buttons
         button_layout = QHBoxLayout()
-        self.process_button = QPushButton("Enhance Video")
+        self.process_button = QPushButton("Enhance Video/Image")
         self.cancel_button = QPushButton("Cancel")
         
         button_layout.addWidget(self.process_button)
@@ -307,6 +307,7 @@ class MainWindow(QMainWindow):
 
     #Duration
     def video_length(self):
+        self.rb_1s = QRadioButton(config.one_second, self)
         self.rb_2s = QRadioButton(config.two_second, self)
         self.rb_4s = QRadioButton(config.four_second, self)
         self.rb_8s = QRadioButton(config.eight_second, self)
@@ -315,6 +316,7 @@ class MainWindow(QMainWindow):
         self.rb_2s.setChecked(True)
 
         self.vl_button_group = QButtonGroup(self)
+        self.vl_button_group.addButton(self.rb_1s)
         self.vl_button_group.addButton(self.rb_2s)
         self.vl_button_group.addButton(self.rb_4s)
         self.vl_button_group.addButton(self.rb_8s)
@@ -322,6 +324,7 @@ class MainWindow(QMainWindow):
 
         self.radio_group_box = QGroupBox(config.video_length, self)
         self.radio_layout = QHBoxLayout()
+        self.radio_layout.addWidget(self.rb_1s)
         self.radio_layout.addWidget(self.rb_2s)
         self.radio_layout.addWidget(self.rb_4s)
         self.radio_layout.addWidget(self.rb_8s)
@@ -413,6 +416,16 @@ class MainWindow(QMainWindow):
         self.model_layout.addWidget(self.model_combo)
         self.model_group_box.setLayout(self.model_layout)
 
+    def image_widget(self):
+
+        self.image_label = QLabel(self)
+        pixmap = QPixmap("")
+        self.image_label.setPixmap(pixmap)
+
+        scaled_pixmap = pixmap.scaled(800, 600)
+        self.image_label.setPixmap(scaled_pixmap)
+        self.image_label.setVisible(False)
+
     #Video widget
     def video_widget(self):
         #Create video widget
@@ -422,12 +435,11 @@ class MainWindow(QMainWindow):
 
         self.video_widget.setFixedSize(800, 600) 
 
-        #need to change later
         # video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
         # video_url = QUrl.fromLocalFile(video_path)
         # self.media_player.setMedia(QMediaContent(video_url))
 
-        self.process_button = QPushButton("Enhance Video")
+        self.process_button = QPushButton("Enhance Video/Image")
         self.reset_button_video = QPushButton("Reset to Original")
         
         #Play buttton
@@ -493,21 +505,27 @@ class MainWindow(QMainWindow):
     #download
     def download(self):
 
-        #src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
-        src_path = self.current_video_path
         downloads_folder = "/mnt/c/Users/user/Downloads"
         #downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+        #src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
+        if self.vl_button_group.checkedButton().text() == "1s (Image)":
+            src_path = self.current_image_path
+            name = "image"
+            ext = "png"
+            des_file_path = os.path.join(downloads_folder, f"image.png")
+        else:
+            src_path = self.current_video_path
+            name = "video"
+            ext = "mp4"
+            des_file_path = os.path.join(downloads_folder, f"video.mp4")
 
-        des_file_path = os.path.join(downloads_folder, f"video.mp4")
         counter = 1
-
         while os.path.exists(des_file_path):
-            des_file_path = os.path.join(downloads_folder, f"video_{counter}.mp4")
+            des_file_path = os.path.join(downloads_folder, f"{name}_{counter}.{ext}")
             counter += 1
 
         shutil.copy(src_path, des_file_path)
         self.show_information_alert(f"{config.download_success_title}", f"{config.download_success_message} {des_file_path}")
-
 
     def count_words(self, s):
         return len(s.split())
@@ -630,6 +648,25 @@ class MainWindow(QMainWindow):
                 self.process_button.setVisible(True)
                 self.reset_button_video.setVisible(True)
                 break
+            
+            elif file_name.endswith('.png') or file_name.endswith('.jpg'):
+
+                self.stopGIF()
+                self.gif_label.setVisible(False)
+                self.show_information_alert(f"{config.Generated_success_title}", f"{config.Generated_success_message}")
+                
+                image_path = os.path.join(path, file_name)
+                self.current_image_path = image_path  # Store the initial image path
+                self.load_image(image_path)
+
+                self.reset_b.setEnabled(True)
+                self.download_b.setEnabled(True)
+
+                self.download_b.setVisible(True)
+                self.image_label.setVisible(True)
+                self.process_button.setVisible(True)
+                self.reset_button_video.setVisible(True)
+                break
 
     #Reset error message
     def resetError(self):
@@ -659,6 +696,7 @@ class MainWindow(QMainWindow):
 
         self.stopGIF()
         self.gif_label.setVisible(False)
+        self.image_label.setVisible(False)
         self.video_widget.setVisible(False)
         self.download_b.setVisible(False)
         self.play_button.setVisible(False)
@@ -746,10 +784,12 @@ class MainWindow(QMainWindow):
         
         #Area 2 layout
         self.video_widget()
+        self.image_widget()
         self.area2_layout =  QVBoxLayout()
         self.area2_layout.addSpacerItem(QSpacerItem(850, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.area2_layout.addWidget(self.gif_label, alignment=Qt.AlignCenter)
         self.area2_layout.addWidget(self.video_widget, alignment=Qt.AlignCenter)
+        self.area2_layout.addWidget(self.image_label, alignment=Qt.AlignCenter)
         self.area2_layout.addSpacerItem(QSpacerItem(650, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.area2_layout.addLayout(self.video_processing_layout)
         self.area2_layout.addLayout(self.pannel_layout)
@@ -859,37 +899,61 @@ class MainWindow(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             anti_aliasing, sharpening, resize = dialog.get_options()
             
-            processing_msg = InformationAlert("Processing", "Your video is being processed...", self)
+            processing_msg = InformationAlert("Processing", "Your video/image is being processed...", self)
             processing_msg.setStyleSheet(config.global_style)
             processing_msg.show()
             QApplication.processEvents()
             
 
             # Process the video
-            input_path = "sample_0000.mp4"
-            output_path = videoProcessing.video_processing(input_path, anti_aliasing, resize, sharpening)
+            if self.vl_button_group.checkedButton().text() == "1s (Image)":
+                input_path = "sample_0000.png"
+                output_path = videoProcessing.image_processing(input_path, anti_aliasing, resize, sharpening)
+
+                output_path = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/enhanced/"), output_path)
+                self.current_image_path = output_path
+                self.load_image(output_path)
+
+            else:
+                input_path = "sample_0000.mp4"
+                output_path = videoProcessing.video_processing(input_path, anti_aliasing, resize, sharpening)
             
             # Load the processed video
-            output_path = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/enhanced/"), output_path)
-            self.current_video_path = output_path 
-            self.load_video(output_path)
-              
+                output_path = os.path.join(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/enhanced/"), output_path)
+                self.current_video_path = output_path 
+                self.load_video(output_path)
+                
             processing_msg.close()
-            self.show_information_alert("Success", "Video processed successfully!")
+            self.show_information_alert("Success", "Video/Image processed successfully!")
 
             # processing_msg.close()
             # QMessageBox.warning(self, "Processing Error", f"Could not process video: {str(e)}")
 
     def reset_to_original(self):
-        original_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
-        self.load_video(original_path)
-        self.current_video_path = original_path
-        self.show_information_alert("Reset", "Video reset to original version")
+        
+        if self.vl_button_group.checkedButton().text() == "1s (Image)":
+            original_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.png")
+            self.load_image(original_path)
+            self.current_image_path = original_path
+            self.show_information_alert("Reset", "Image reset to original version")
+        else:    
+            original_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../samples/samples/sample_0000.mp4")
+            self.load_video(original_path)
+            self.current_video_path = original_path
+            self.show_information_alert("Reset", "Video reset to original version")
 
     def load_video(self, video_path):
         video_url = QUrl.fromLocalFile(video_path)
         self.media_player.setMedia(QMediaContent(video_url))
         self.media_player.play()
+
+    def load_image(self, image_path):
+
+        pixmap = QPixmap(image_path)
+        self.image_label.setPixmap(pixmap)
+        scaled_pixmap = pixmap.scaled(800, 600)
+        self.image_label.setPixmap(scaled_pixmap)
+        
 
 def main():
     sys.excepthook = exception_hook

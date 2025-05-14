@@ -13,6 +13,50 @@ def sharpening():
             [-1, 5, -1],
             [0, -1, 0]])
 
+def image_processing(input_path, enable_anti_aliasing=True, enable_resize=True, enable_sharpening=True):
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    input_full_path = os.path.join(script_dir, "../../samples/samples/", input_path)
+    output_path = os.path.join(script_dir, "../../samples/enhanced/", "enhanced.png")
+    
+    
+    for filename in os.listdir(os.path.join(script_dir, "../../samples/enhanced")):
+        file_path = os.path.join(os.path.join(script_dir, "../../samples/enhanced"), filename)
+
+        if os.path.isfile(file_path):
+            os.remove(file_path) 
+    
+    # Read input image
+    img = cv2.imread(input_full_path)
+    if img is None:
+        raise IOError("Could not open input image file")
+    
+    # Store original dimensions
+    original_height, original_width = img.shape[:2]
+    
+    # Set output dimensions
+    if enable_resize:
+        # Resize to 480p equivalent (maintaining aspect ratio)
+        target_height = 480
+        aspect_ratio = original_width / original_height
+        out_width = int(target_height * aspect_ratio)
+        out_height = target_height
+    else:
+        out_width, out_height = original_width, original_height
+    
+    # Apply processing
+    if enable_sharpening:
+        img = cv2.filter2D(img, -1, sharpening())
+    if enable_resize:
+        img = cv2.resize(img, (out_width, out_height), interpolation=resize())
+    if enable_anti_aliasing:
+        img = cv2.GaussianBlur(img, anti_aliasing(), 0)
+    
+    # Save processed image
+    cv2.imwrite(output_path, img)
+    return "enhanced.png"
+
+
 #Resize to 480p
 def video_processing(input_path, enable_anti_aliasing=True, enable_resize=True, enable_sharpening=True):
     script_dir = os.path.dirname(os.path.abspath(__file__))

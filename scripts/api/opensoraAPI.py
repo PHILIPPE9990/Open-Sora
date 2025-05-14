@@ -20,6 +20,9 @@ def runTerminalCommand(desc, videoLength, resolution, model, seed):
         os.chdir(two_levels_up)
 
         cmd = []
+        if videoLength == "1s (Image)":
+            videoLength = "1s"
+
         if(model == "opensora-v1-2"):
             cmd  = [
                 "python", "scripts/inference.py", "configs/opensora-v1-2/inference/sample.py",
