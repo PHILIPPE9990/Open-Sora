@@ -24,6 +24,10 @@ def runTerminalCommand(desc, videoLength, resolution, model, seed):
             videoLength = "1s"
 
         if(model == "opensora-v1-2"):
+
+            if videoLength == '1s':
+                videoLength = '1'
+
             cmd  = [
                 "python", "scripts/inference.py", "configs/opensora-v1-2/inference/sample.py",
                 "--num-frames", videoLength,
