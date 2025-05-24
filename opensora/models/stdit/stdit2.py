@@ -510,8 +510,9 @@ def STDiT2_XL_2(from_pretrained=None, **kwargs):
     if from_pretrained is not None:
         if os.path.isdir(from_pretrained) or os.path.isfile(from_pretrained):
             # if it is a directory or a file, we load the checkpoint manually
-            config = STDiT2Config(depth=28, hidden_size=1152, patch_size=(1, 2, 2), num_heads=16, **kwargs)
+            config = STDiT2Config(depth=12, hidden_size=1152, patch_size=(1, 2, 2), num_heads=16, **kwargs)
             model = STDiT2(config)
+            print(model)
             load_checkpoint(model, from_pretrained)
             return model
         else:
@@ -520,5 +521,6 @@ def STDiT2_XL_2(from_pretrained=None, **kwargs):
     else:
         # create a new model
         config = STDiT2Config(depth=28, hidden_size=1152, patch_size=(1, 2, 2), num_heads=16, **kwargs)
+        print(model)
         model = STDiT2(config)
     return model
