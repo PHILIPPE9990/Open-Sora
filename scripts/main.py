@@ -258,6 +258,24 @@ class MainWindow(QMainWindow):
 
         #self.setWindowIcon() #setWindowIcon
 
+    def start_timer(self):
+        """Start tracking time when video generation begins"""
+        self.start_time = QtCore.QDateTime.currentDateTime()
+        print(f"⏱️ Video generation started at: {self.start_time.toString('hh:mm:ss')}")
+
+    def stop_timer(self):
+        """Calculate and print total time when generation completes"""
+        if hasattr(self, 'start_time'):
+            elapsed = self.start_time.secsTo(QtCore.QDateTime.currentDateTime())
+            print(f"⏱️ Video generation completed in: {self.format_time(elapsed)}")
+
+    def format_time(self, seconds):
+        """Format seconds into HH:MM:SS"""
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
     #Update menu bar
     def updateMenuBar(self, index):
         self.menu_bar.clear()
@@ -604,6 +622,8 @@ class MainWindow(QMainWindow):
         
         self.gif_label.setVisible(True)
         self.startGIF()
+        
+        self.start_timer()
 
         self.thread = CommandThread(desc, video_length, resolution, model, seed)
         self.thread.error_signal.connect(self.error_thread)
@@ -621,7 +641,7 @@ class MainWindow(QMainWindow):
     def check_for_completed(self, path):
         for file_name in os.listdir(path):
             if file_name.endswith('.mp4'):
-                
+                self.stop_timer()
                 self.stopGIF()
                 self.gif_label.setVisible(False)
 
@@ -650,7 +670,7 @@ class MainWindow(QMainWindow):
                 break
             
             elif file_name.endswith('.png') or file_name.endswith('.jpg'):
-
+                self.stop_timer()
                 self.stopGIF()
                 self.gif_label.setVisible(False)
                 self.show_information_alert(f"{config.Generated_success_title}", f"{config.Generated_success_message}")
