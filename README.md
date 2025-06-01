@@ -5,10 +5,10 @@
     - You could also refer to a online video: https://youtu.be/XkQx8yzvMXg?si=P5u8eDLdl2wvBzAO
 3. Prpepare a hugging face account, and input your own key to operate the Llam-2.7B model
 4. Makesure you have install all the library stated on: Open-Sora/requirements/requirements-philip.txt
-5: Command line:
-    conda activate opensora
-    cd Open-Sora/scripts
-    python main.py
+5. Command line:
+       <br>conda activate opensora
+       <br>cd Open-Sora/scripts
+       <br>python main.py
 
 <p align="center">
     <img src="./assets/readme/icon.png" width="250"/>
