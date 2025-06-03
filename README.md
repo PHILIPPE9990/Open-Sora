@@ -1,5 +1,5 @@
 ## Setup: 
-1. Prepare a Linux and WSL environment
+1. Prepare a Linux Or WSL environment
 2. Openarting Open-Sora in the local environment 
     - Please refer the install documentation of Open-Sora: https://github.com/PHILIPPE9990/Open-Sora/blob/main/docs/installation.md
     - You could also refer to a online video: https://youtu.be/XkQx8yzvMXg?si=P5u8eDLdl2wvBzAO
