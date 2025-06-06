@@ -1,4 +1,4 @@
-## Setup: 
+## Setup (By Philippe): 
 1. Prepare a Linux Or WSL environment
 2. Openarting Open-Sora in the local environment 
     - Please refer the install documentation of Open-Sora: https://github.com/PHILIPPE9990/Open-Sora/blob/main/docs/installation.md
